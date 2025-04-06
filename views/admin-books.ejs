@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-content">
+            <h1>도서 관리</h1>
+            <div class="user-menu">
+                <% if (user) { %>
+                    <div class="user-info">
+                        <span><%= user.username %></span>
+                        <button class="dropdown-btn">▼</button>
+                        <div class="dropdown-content">
+                            <a href="/">메인페이지</a>
+                            <a href="/logout" class="logout-btn">로그아웃</a>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="books">
+            <% books.forEach(function(book) { %>
+                <div class="book" data-id="<%= book._id %>">
+                    <div class="book-container">
+                        <div class="book-image-container">
+                            <img src="<%= book.imageUrl %>" alt="<%= book.title %>">
+                            <div class="image-upload-overlay">
+                                <span>이미지 업로드</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="book-info-display">
+                        <h3 class="book-title"><%= book.title %></h3>
+                        <p class="book-author"><%= book.author %></p>
+                        <p class="book-price"><%= book.price %>원</p>
+                        <div class="book-actions">
+                            <button class="btn-edit">수정</button>
+                            <button class="btn-delete">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </main>
+
+    <!-- 수정 모달 -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>도서 정보 수정</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editTitle">제목</label>
+                    <input type="text" id="editTitle" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="editAuthor">저자</label>
+                    <input type="text" id="editAuthor" name="author" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPrice">가격</label>
+                    <input type="number" id="editPrice" name="price" required min="0">
+                </div>
+                <div class="form-group">
+                    <label for="editType">종류</label>
+                    <select id="editType" name="type" required>
+                        <option value="new">새 책</option>
+                        <option value="used">중고</option>
+                        <option value="ebook">전자책</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">수정</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('editModal');
+            const editForm = document.getElementById('editForm');
+            let currentBookId = null;
+
+            // 수정 버튼 클릭 이벤트
+            document.querySelectorAll('.btn-edit').forEach(button => {
+                button.addEventListener('click', function() {
+                    const bookElement = this.closest('.book');
+                    currentBookId = bookElement.dataset.id;
+                    
+                    // 현재 도서 정보를 모달에 채우기
+                    const title = bookElement.querySelector('.book-title').textContent;
+                    const author = bookElement.querySelector('.book-author').textContent;
+                    const price = bookElement.querySelector('.book-price').textContent.replace('원', '');
+                    
+                    document.getElementById('editTitle').value = title;
+                    document.getElementById('editAuthor').value = author;
+                    document.getElementById('editPrice').value = price;
+                    
+                    modal.style.display = 'block';
+                });
+            });
+
+            // 모달 닫기
+            document.querySelector('.close').addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+
+            // 모달 외부 클릭시 닫기
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // ESC 키로 모달 닫기
+            window.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // 수정 폼 제출
+            editForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (!currentBookId) return;
+
+                try {
+                    const response = await fetch(`/api/books/${currentBookId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            title: document.getElementById('editTitle').value,
+                            author: document.getElementById('editAuthor').value,
+                            price: document.getElementById('editPrice').value,
+                            type: document.getElementById('editType').value
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || '수정 중 오류가 발생했습니다.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('서버 오류가 발생했습니다.');
+                }
+            });
+
+            // 삭제 버튼 클릭 이벤트
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', async function() {
+                    if (!confirm('정말 삭제하시겠습니까?')) return;
+
+                    const bookElement = this.closest('.book');
+                    const bookId = bookElement.dataset.id;
+
+                    try {
+                        const response = await fetch(`/api/books/${bookId}`, {
+                            method: 'DELETE'
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            bookElement.remove();
+                        } else {
+                            alert(data.message || '삭제 중 오류가 발생했습니다.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('서버 오류가 발생했습니다.');
+                    }
+                });
+            });
+
+            // 이미지 업로드 처리
+            document.querySelectorAll('.book-image-container').forEach(container => {
+                const bookElement = container.closest('.book');
+                const bookId = bookElement.dataset.id;
+                const img = container.querySelector('img');
+
+                container.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    
+                    input.onchange = async function() {
+                        const file = this.files[0];
+                        if (!file) return;
+
+                        const formData = new FormData();
+                        formData.append('image', file);
+
+                        try {
+                            const response = await fetch(`/api/books/${bookId}/image`, {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                img.src = data.imageUrl;
+                            } else {
+                                alert(data.message || '이미지 업로드 중 오류가 발생했습니다.');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('서버 오류가 발생했습니다.');
+                        }
+                    };
+
+                    input.click();
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

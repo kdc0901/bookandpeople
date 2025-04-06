@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 로그인</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="admin-login-container">
+        <div class="admin-login-box">
+            <h1>관리자 로그인</h1>
+            <form id="adminLoginForm" class="admin-login-form">
+                <div class="form-group">
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminCode">관리자 코드</label>
+                    <input type="password" id="adminCode" name="adminCode" required>
+                </div>
+                <button type="submit" class="btn btn-admin">로그인</button>
+            </form>
+            <div class="back-to-home">
+                <a href="/">메인페이지로 돌아가기</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                username: e.target.username.value,
+                password: e.target.password.value,
+                adminCode: e.target.adminCode.value
+            };
+
+            try {
+                const response = await fetch('/api/users/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    window.location.replace(data.redirectUrl);
+                } else {
+                    alert(data.message || '로그인에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('서버 오류가 발생했습니다.');
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="nav-left">
+                    <a href="/" class="logo">My Website</a>
+                </div>
+                <div class="nav-right">
+                    <div class="login-form-container">
+                        <form action="/api/users/login" method="POST" class="login-form">
+                            <div class="form-group">
+                                <input type="text" name="username" placeholder="사용자명" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="password" placeholder="비밀번호" required>
+                            </div>
+                            <button type="submit" class="btn">로그인</button>
+                        </form>
+                        <div class="register-link">
+                            <span>계정이 없으신가요?</span>
+                            <a href="/register">회원가입</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <h1>환영합니다!</h1>
+            <p>로그인하여 서비스를 이용해보세요.</p>
+        </div>
+    </main>
+
+    <script>
+        // 드롭다운 메뉴 토글
+        document.querySelectorAll('.dropdown-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const dropdown = button.nextElementSibling;
+                dropdown.classList.toggle('show');
+            });
+        });
+
+        // 문서 클릭 시 드롭다운 닫기
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
