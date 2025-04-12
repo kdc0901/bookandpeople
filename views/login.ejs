@@ -3,59 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로그인</title>
+    <title>로그인 - Book & People</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
-    <header class="header">
-        <div class="container">
-            <nav class="nav">
-                <div class="nav-left">
-                    <a href="/" class="logo">My Website</a>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <a href="/" class="login-logo">
+                <h1>Book & People</h1>
+            </a>
+            <p>당신의 독서 여정을 함께합니다</p>
+        </div>
+        
+        <div class="login-box">
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <input type="text" id="username" name="username" placeholder="아이디" required>
                 </div>
-                <div class="nav-right">
-                    <div class="login-form-container">
-                        <form action="/api/users/login" method="POST" class="login-form">
-                            <div class="form-group">
-                                <input type="text" name="username" placeholder="사용자명" required>
-                            </div>
-                            <div class="form-group">
-                                <input type="password" name="password" placeholder="비밀번호" required>
-                            </div>
-                            <button type="submit" class="btn">로그인</button>
-                        </form>
-                        <div class="register-link">
-                            <span>계정이 없으신가요?</span>
-                            <a href="/register">회원가입</a>
-                        </div>
+                <div class="form-group">
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" placeholder="비밀번호" required>
+                        <button type="button" class="password-toggle" aria-label="비밀번호 보기">
+                            <i class="far fa-eye"></i>
+                        </button>
                     </div>
                 </div>
-            </nav>
+                <div class="login-options">
+                    <label class="save-id">
+                        <input type="checkbox" id="saveId">
+                        <span>아이디 저장</span>
+                    </label>
+                    <div class="find-links">
+                        <a href="/find-id">아이디 찾기</a>
+                        <span>|</span>
+                        <a href="/find-password">비밀번호 찾기</a>
+                    </div>
+                </div>
+                <div class="login-buttons">
+                    <button type="submit" class="btn-login">로그인</button>
+                    <a href="/register" class="btn-register">회원가입</a>
+                </div>
+                <div class="social-login">
+                    <p>다른 서비스 계정으로 로그인</p>
+                    <div class="social-buttons">
+                        <button type="button" class="btn-social naver">
+                            <i class="fas fa-n"></i>
+                            네이버 로그인
+                        </button>
+                        <button type="button" class="btn-social kakao">
+                            <i class="fas fa-comment"></i>
+                            카카오 로그인
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
-    </header>
-
-    <main class="main">
-        <div class="container">
-            <h1>환영합니다!</h1>
-            <p>로그인하여 서비스를 이용해보세요.</p>
-        </div>
-    </main>
+    </div>
 
     <script>
-        // 드롭다운 메뉴 토글
-        document.querySelectorAll('.dropdown-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const dropdown = button.nextElementSibling;
-                dropdown.classList.toggle('show');
-            });
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.querySelector('.login-form');
+            const passwordInput = document.querySelector('input[type="password"]');
+            const togglePassword = document.querySelector('.password-toggle');
 
-        // 문서 클릭 시 드롭다운 닫기
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.dropdown')) {
-                document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-                    dropdown.classList.remove('show');
+            // 비밀번호 표시/숨김 토글
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.classList.toggle('show');
+            });
+
+            // 로그인 폼 제출
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.querySelector('input[name="username"]').value;
+                const password = document.querySelector('input[name="password"]').value;
+                
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        // 로그인 성공
+                        document.body.classList.add('logged-in');
+                        window.location.href = '/'; // 메인 페이지로 리다이렉트
+                    } else {
+                        // 로그인 실패
+                        alert(data.message || '로그인에 실패했습니다.');
+                    }
+                } catch (error) {
+                    console.error('로그인 중 오류 발생:', error);
+                    alert('로그인 처리 중 오류가 발생했습니다.');
+                }
+            });
+
+            // 아이디 저장 기능
+            const saveIdCheckbox = document.getElementById('saveId');
+            const usernameInput = document.getElementById('username');
+
+            if (saveIdCheckbox && usernameInput) {
+                // 저장된 아이디가 있으면 불러오기
+                const savedUsername = localStorage.getItem('savedUsername');
+                if (savedUsername) {
+                    usernameInput.value = savedUsername;
+                    saveIdCheckbox.checked = true;
+                }
+
+                // 아이디 저장 체크박스 변경 시
+                saveIdCheckbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        localStorage.setItem('savedUsername', usernameInput.value);
+                    } else {
+                        localStorage.removeItem('savedUsername');
+                    }
                 });
             }
         });

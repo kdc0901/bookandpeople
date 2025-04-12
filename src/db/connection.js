@@ -7,7 +7,7 @@ const connectDB = async () => {
 
     while (retryCount < maxRetries) {
         try {
-            const conn = await mongoose.connect('mongodb://localhost:27017/my-website');
+            const conn = await mongoose.connect('mongodb://localhost:27017/bookandpeople');
             console.log(`MongoDB 연결 성공: ${conn.connection.host}`);
             return conn;
         } catch (error) {

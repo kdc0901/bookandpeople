@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원정보 수정 - Book & People</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 헤더 -->
+    <%- include('partials/header') %>
+
+    <div class="mypage-container">
+        <div class="mypage-content">
+            <h1>회원정보 수정</h1>
+            
+            <div class="edit-section">
+                <form id="editForm" class="edit-form">
+                    <div class="form-group">
+                        <label for="name">이름</label>
+                        <input type="text" id="name" name="name" value="<%= user.name %>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">이메일</label>
+                        <input type="email" id="email" name="email" value="<%= user.email %>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">연락처</label>
+                        <input type="tel" id="phone" name="phone" value="<%= user.phone || '' %>" placeholder="예: 010-1234-5678">
+                    </div>
+                    <div class="form-group">
+                        <label for="postcode">우편번호</label>
+                        <div class="postcode-group">
+                            <input type="text" id="postcode" name="postcode" value="<%= user.postcode || '' %>" readonly>
+                            <button type="button" class="btn btn-secondary" onclick="searchAddress()">
+                                <i class="fas fa-search"></i> 주소 검색
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">기본주소</label>
+                        <input type="text" id="address" name="address" value="<%= user.address || '' %>" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="addressDetail">상세주소</label>
+                        <input type="text" id="addressDetail" name="addressDetail" value="<%= user.addressDetail || '' %>">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 저장하기
+                        </button>
+                        <a href="/mypage" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 돌아가기
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 다음 주소 검색 API -->
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 드롭다운 메뉴 초기화
+        const dropdownBtn = document.querySelector('.dropdown-btn');
+        const dropdownContent = document.querySelector('.dropdown-content');
+        
+        if (dropdownBtn && dropdownContent) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdownContent.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    dropdownContent.classList.remove('show');
+                }
+            });
+        }
+
+        // 회원정보 수정 폼 제출
+        const editForm = document.getElementById('editForm');
+        if (editForm) {
+            editForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const userData = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    postcode: formData.get('postcode'),
+                    address: formData.get('address'),
+                    addressDetail: formData.get('addressDetail')
+                };
+
+                try {
+                    const response = await fetch('/api/users/update', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('회원정보가 성공적으로 수정되었습니다.');
+                        window.location.href = '/mypage';
+                    } else {
+                        alert(data.message || '회원정보 수정 중 오류가 발생했습니다.');
+                    }
+                } catch (error) {
+                    console.error('Update error:', error);
+                    alert('서버 오류가 발생했습니다.');
+                }
+            });
+        }
+    });
+
+    // 다음 주소 검색
+    function searchAddress() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                document.getElementById('postcode').value = data.zonecode;
+                document.getElementById('address').value = data.address;
+                document.getElementById('addressDetail').focus();
+            }
+        }).open();
+    }
+    </script>
+</body>
+</html> 

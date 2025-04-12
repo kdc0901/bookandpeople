@@ -5,24 +5,8 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
-
-// 미들웨어: 로그인 여부 확인
-const isAuthenticated = (req, res, next) => {
-    if (req.session.user) {
-        next();
-    } else {
-        res.status(401).json({ success: false, message: '로그인이 필요합니다.' });
-    }
-};
-
-// 미들웨어: 관리자 권한 확인
-const isAdmin = (req, res, next) => {
-    if (req.session.user && req.session.user.isAdmin) {
-        next();
-    } else {
-        res.status(403).json({ success: false, message: '관리자 권한이 필요합니다.' });
-    }
-};
+const { isAuthenticated, isAdmin } = require('../middleware/auth');
+const Order = require('../models/Order');
 
 // 사용자명 유효성 검사 함수
 const validateUsername = (username) => {
@@ -213,19 +197,19 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// 로그아웃
-router.post('/logout', (req, res) => {
+// 로그아웃 처리
+router.post('/logout', isAuthenticated, (req, res) => {
     req.session.destroy((err) => {
         if (err) {
+            console.error('로그아웃 에러:', err);
             return res.status(500).json({
                 success: false,
                 message: '로그아웃 중 오류가 발생했습니다.'
             });
         }
-        res.clearCookie('connect.sid');
         res.json({
             success: true,
-            message: '로그아웃 되었습니다.'
+            message: '로그아웃되었습니다.'
         });
     });
 });
@@ -234,16 +218,121 @@ router.post('/logout', (req, res) => {
 router.get('/mypage', isAuthenticated, async (req, res) => {
     try {
         const user = await User.findById(req.session.user.id).select('-password');
-        if (!user) {
-            return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
-        }
-        res.render('mypage', { 
+        const orders = await Order.find({ user: req.session.user.id })
+            .populate({
+                path: 'items.book',
+                select: 'title author imageUrl'
+            })
+            .sort({ createdAt: -1 });
+
+        res.render('mypage', {
             title: '마이페이지',
+            user: user,
+            orders: orders
+        });
+    } catch (error) {
+        console.error('마이페이지 조회 오류:', error);
+        res.status(500).json({ success: false, message: '마이페이지 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// 회원정보 수정 페이지
+router.get('/mypage/edit', isAuthenticated, async (req, res) => {
+    try {
+        const user = await User.findById(req.session.user.id).select('-password');
+        res.render('mypage-edit', {
+            title: '회원정보 수정',
             user: user
         });
     } catch (error) {
-        console.error('마이페이지 에러:', error);
-        res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+        console.error('회원정보 수정 페이지 조회 오류:', error);
+        res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+    }
+});
+
+// 회원정보 수정 처리
+router.put('/api/users/update', isAuthenticated, async (req, res) => {
+    try {
+        const { name, email, phone, postcode, address, addressDetail } = req.body;
+        
+        // 이메일 중복 확인 (현재 사용자 제외)
+        const existingUser = await User.findOne({ 
+            email, 
+            _id: { $ne: req.session.user.id } 
+        });
+        
+        if (existingUser) {
+            return res.status(400).json({ 
+                success: false, 
+                message: '이미 사용 중인 이메일입니다.' 
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.session.user.id,
+            {
+                name,
+                email,
+                phone,
+                postcode,
+                address,
+                addressDetail,
+                updatedAt: Date.now()
+            },
+            { new: true }
+        );
+
+        res.json({ 
+            success: true, 
+            message: '회원정보가 성공적으로 수정되었습니다.',
+            user: updatedUser 
+        });
+    } catch (error) {
+        console.error('회원정보 수정 오류:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '서버 오류가 발생했습니다.' 
+        });
+    }
+});
+
+// 비밀번호 변경 페이지
+router.get('/mypage/password', isAuthenticated, (req, res) => {
+    res.render('mypage-password', {
+        title: '비밀번호 변경',
+        user: req.session.user
+    });
+});
+
+// 비밀번호 변경 처리
+router.put('/api/users/password', isAuthenticated, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findById(req.session.user.id);
+
+        // 현재 비밀번호 확인
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) {
+            return res.status(400).json({ 
+                success: false, 
+                message: '현재 비밀번호가 일치하지 않습니다.' 
+            });
+        }
+
+        // 새 비밀번호 설정
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ 
+            success: true, 
+            message: '비밀번호가 성공적으로 변경되었습니다.' 
+        });
+    } catch (error) {
+        console.error('비밀번호 변경 오류:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '서버 오류가 발생했습니다.' 
+        });
     }
 });
 

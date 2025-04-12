@@ -1,234 +1,58 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
-<body>
-    <header class="main-header">
-        <div class="header-content">
-            <h1>오늘의 PICK</h1>
-            <div class="user-menu">
-                <% if (user) { %>
-                    <div class="user-info">
-                        <span><%= user.username %></span>
-                        <button class="dropdown-btn">▼</button>
-                        <div class="dropdown-content">
-                            <% if (user.isAdmin) { %>
-                                <a href="/admin/books">도서 관리</a>
-                                <a href="/admin/users">회원 관리</a>
-                            <% } %>
-                            <a href="/mypage">마이페이지</a>
-                            <a href="/logout" class="logout-btn">로그아웃</a>
+<%- contentFor('body') %>
+<div class="main-page">
+    <section class="main-page__section">
+        <h2 class="main-page__title">오늘의 PICK</h2>
+        <div class="main-page__book-grid">
+            <% if (typeof todayPicks !== 'undefined' && todayPicks.length > 0) { %>
+                <% todayPicks.forEach(function(book) { %>
+                    <div class="main-page__book-item">
+                        <div class="main-page__book-image">
+                            <img src="<%= book.imageUrl %>" alt="<%= book.title %>">
+                        </div>
+                        <div class="main-page__book-info">
+                            <h3 class="main-page__book-title"><%= book.title %></h3>
+                            <p class="main-page__book-author"><%= book.author %></p>
+                            <p class="main-page__book-published">
+                                <%= new Date(book.publishedAt).toLocaleDateString('ko-KR', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                }) %>
+                            </p>
                         </div>
                     </div>
-                <% } else { %>
-                    <div class="auth-buttons">
-                        <input type="text" id="loginUsername" placeholder="아이디">
-                        <div class="password-input-container">
-                            <input type="password" id="loginPassword" placeholder="비밀번호">
-                            <button type="button" class="password-toggle">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <button id="loginBtn" class="btn-login">로그인</button>
-                        <a href="/register" class="btn-register">회원가입</a>
-                    </div>
-                <% } %>
-            </div>
-        </div>
-    </header>
-
-    <nav class="main-nav">
-        <ul>
-            <li><a href="/"><i class="fas fa-home"></i>홈</a></li>
-            <li><a href="/books"><i class="fas fa-book"></i>도서</a></li>
-            <li><a href="/about"><i class="fas fa-info-circle"></i>소개</a></li>
-            <% if (user && user.isAdmin) { %>
-                <li><a href="/admin/books"><i class="fas fa-cog"></i>관리</a></li>
-            <% } %>
-        </ul>
-    </nav>
-
-    <main class="main-content">
-        <div class="books">
-            <% for(let i = 0; i < 6; i++) { %>
-                <div class="book" onclick="location.href='/books/<%= i + 1 %>'">
-                    <div class="book-container">
-                        <div class="book-image-container">
-                            <img src="https://via.placeholder.com/300x400" alt="책 이미지">
-                            <% if (user && user.isAdmin) { %>
-                                <div class="image-upload-overlay">
-                                    <span>이미지 업로드</span>
-                                </div>
-                            <% } %>
-                        </div>
-                    </div>
-                    <div class="book-info-display">
-                        <h3 class="book-title">책 제목 <%= i + 1 %></h3>
-                        <p class="book-author">저자명</p>
-                        <p class="book-price">20,000원</p>
-                    </div>
-                </div>
+                <% }); %>
+            <% } else { %>
+                <p>등록된 책이 없습니다.</p>
             <% } %>
         </div>
-    </main>
+    </section>
 
-    <style>
-    .password-input-container {
-        position: relative;
-        display: inline-block;
-        width: 100%;
-    }
-
-    .password-toggle {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        color: #666;
-    }
-
-    .password-toggle:hover {
-        color: #333;
-    }
-
-    #loginPassword {
-        width: 100%;
-        padding-right: 35px;
-    }
-    </style>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 로그인 처리
-            const loginBtn = document.getElementById('loginBtn');
-            if (loginBtn) {
-                loginBtn.addEventListener('click', async function() {
-                    const username = document.getElementById('loginUsername').value;
-                    const password = document.getElementById('loginPassword').value;
-
-                    try {
-                        const response = await fetch('/api/users/login', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ username, password })
-                        });
-
-                        const data = await response.json();
-                        if (data.success) {
-                            window.location.reload();
-                        } else {
-                            alert(data.message || '로그인에 실패했습니다.');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('서버 오류가 발생했습니다.');
-                    }
-                });
-            }
-
-            // 비밀번호 토글
-            const passwordToggle = document.querySelector('.password-toggle');
-            if (passwordToggle) {
-                passwordToggle.addEventListener('click', function() {
-                    const passwordInput = document.getElementById('loginPassword');
-                    const icon = this.querySelector('i');
-                    
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        icon.classList.remove('fa-eye');
-                        icon.classList.add('fa-eye-slash');
-                    } else {
-                        passwordInput.type = 'password';
-                        icon.classList.remove('fa-eye-slash');
-                        icon.classList.add('fa-eye');
-                    }
-                });
-            }
-
-            // 드롭다운 메뉴
-            const dropdownBtn = document.querySelector('.dropdown-btn');
-            const dropdownContent = document.querySelector('.dropdown-content');
-            
-            if (dropdownBtn && dropdownContent) {
-                dropdownBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    dropdownContent.classList.toggle('show');
-                });
-
-                document.addEventListener('click', function(e) {
-                    if (!dropdownContent.contains(e.target) && !dropdownBtn.contains(e.target)) {
-                        dropdownContent.classList.remove('show');
-                    }
-                });
-            }
-
-            // 로그아웃
-            const logoutBtn = document.querySelector('.logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', async function(e) {
-                    e.preventDefault();
-                    try {
-                        const response = await fetch('/api/users/logout', {
-                            method: 'POST'
-                        });
-                        const data = await response.json();
-                        if (data.success) {
-                            window.location.reload();
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('로그아웃 중 오류가 발생했습니다.');
-                    }
-                });
-            }
-
-            // 스타일 디버깅
-            const bookContainer = document.querySelector('.book-container');
-            const bookImageContainer = document.querySelector('.book-image-container');
-            const bookImage = document.querySelector('.book-image-container img');
-
-            if (bookContainer) {
-                const styles = window.getComputedStyle(bookContainer);
-                console.log('Book Container Styles:', {
-                    position: styles.position,
-                    paddingTop: styles.paddingTop,
-                    width: styles.width,
-                    height: styles.height
-                });
-            }
-
-            if (bookImageContainer) {
-                const styles = window.getComputedStyle(bookImageContainer);
-                console.log('Book Image Container Styles:', {
-                    position: styles.position,
-                    width: styles.width,
-                    height: styles.height,
-                    top: styles.top,
-                    left: styles.left
-                });
-            }
-
-            if (bookImage) {
-                const styles = window.getComputedStyle(bookImage);
-                console.log('Book Image Styles:', {
-                    width: styles.width,
-                    height: styles.height,
-                    objectFit: styles.objectFit,
-                    padding: styles.padding
-                });
-            }
-        });
-    </script>
-</body>
-</html> 
+    <section class="main-page__section">
+        <h2 class="main-page__title">지금, 이 책</h2>
+        <div class="main-page__book-grid">
+            <% if (typeof currentBooks !== 'undefined' && currentBooks.length > 0) { %>
+                <% currentBooks.forEach(function(book) { %>
+                    <div class="main-page__book-item">
+                        <div class="main-page__book-image">
+                            <img src="<%= book.imageUrl %>" alt="<%= book.title %>">
+                        </div>
+                        <div class="main-page__book-info">
+                            <h3 class="main-page__book-title"><%= book.title %></h3>
+                            <p class="main-page__book-author"><%= book.author %></p>
+                            <p class="main-page__book-published">
+                                <%= new Date(book.publishedAt).toLocaleDateString('ko-KR', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                }) %>
+                            </p>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p>등록된 책이 없습니다.</p>
+            <% } %>
+        </div>
+    </section>
+</div> 

@@ -1,0 +1,254 @@
+<!-- 로그아웃 스크립트 -->
+<% if (user) { %>
+<script>
+    function handleLogout() {
+        fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/';
+            } else {
+                throw new Error('로그아웃 실패');
+            }
+        })
+        .catch(error => {
+            console.error('Logout error:', error);
+            alert('로그아웃 중 오류가 발생했습니다.');
+        });
+    }
+</script>
+<% } %>
+
+<style>
+    .top-menu {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        padding: 8px 0;
+    }
+
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    .left-menu a, .right-menu a {
+        color: #495057;
+        text-decoration: none;
+        margin-right: 15px;
+        font-size: 0.9em;
+    }
+
+    .left-menu a:hover, .right-menu a:hover {
+        color: #228be6;
+    }
+
+    .main-header {
+        background-color: white;
+        padding: 20px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .logo {
+        text-decoration: none;
+    }
+
+    .logo h1 {
+        color: #228be6;
+        margin: 0;
+        font-size: 24px;
+    }
+
+    .main-nav .nav-menu {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-item {
+        margin-right: 20px;
+    }
+
+    .nav-item a {
+        color: #343a40;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .nav-item a:hover {
+        color: #228be6;
+    }
+
+    .search-box {
+        flex: 1;
+        max-width: 400px;
+        margin: 0 20px;
+    }
+
+    .search-box form {
+        display: flex;
+    }
+
+    .search-box input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 4px 0 0 4px;
+        font-size: 14px;
+    }
+
+    .search-box button {
+        padding: 8px 16px;
+        background: #228be6;
+        border: none;
+        border-radius: 0 4px 4px 0;
+        color: white;
+        cursor: pointer;
+    }
+
+    .auth-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-auth {
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .btn-auth.login {
+        background-color: #228be6;
+        color: white;
+    }
+
+    .btn-auth.register {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
+    .user-menu {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .username {
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .btn-logout {
+        padding: 6px 12px;
+        background-color: #e9ecef;
+        border: none;
+        border-radius: 4px;
+        color: #495057;
+        cursor: pointer;
+    }
+
+    .btn-logout:hover {
+        background-color: #dee2e6;
+    }
+</style>
+
+<!-- 상단 메뉴 -->
+<div class="top-menu">
+    <div class="header-container">
+        <div class="left-menu">
+            <a href="/books/domestic"><i class="fas fa-book"></i> 국내도서</a>
+            <a href="/books/foreign"><i class="fas fa-globe"></i> 외국도서</a>
+            <a href="/books/used"><i class="fas fa-store"></i> 중고샵</a>
+            <a href="/ebooks"><i class="fas fa-tablet-alt"></i> eBook</a>
+            <a href="/club"><i class="fas fa-users"></i> 크레마클럽</a>
+            <a href="/music"><i class="fas fa-compact-disc"></i> CD/LP</a>
+            <a href="/video"><i class="fas fa-film"></i> DVD/BD</a>
+            <a href="/gifts"><i class="fas fa-gift"></i> 문구/GIFT</a>
+            <a href="/tickets"><i class="fas fa-ticket-alt"></i> 티켓</a>
+        </div>
+        <div class="right-menu">
+            <% if (!user) { %>
+            <a href="/login"><i class="fas fa-sign-in-alt"></i> 로그인</a>
+            <a href="/register"><i class="fas fa-user-plus"></i> 회원가입</a>
+            <% } else { %>
+            <a href="/mypage"><i class="fas fa-user"></i> 마이페이지</a>
+            <a href="/cart"><i class="fas fa-shopping-cart"></i> 장바구니</a>
+            <% } %>
+            <a href="/customer"><i class="fas fa-headset"></i> 고객센터</a>
+        </div>
+    </div>
+</div>
+
+<!-- 메인 헤더 -->
+<header class="main-header">
+    <div class="header-container">
+        <!-- 로고 -->
+        <a href="/" class="logo">
+            <h1>Book & People</h1>
+        </a>
+
+        <!-- 메인 네비게이션 -->
+        <nav class="main-nav">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/"><i class="fas fa-home"></i> 홈</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/books"><i class="fas fa-book"></i> 도서</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/ebooks"><i class="fas fa-tablet-alt"></i> 전자책</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/papers"><i class="fas fa-scroll"></i> 소논문집</a>
+                </li>
+                <% if (user && user.isAdmin) { %>
+                <li class="nav-item">
+                    <a href="/admin/books"><i class="fas fa-cog"></i> 관리</a>
+                </li>
+                <% } %>
+            </ul>
+        </nav>
+
+        <!-- 검색창 -->
+        <div class="search-box">
+            <form action="/search" method="GET">
+                <input type="text" name="query" placeholder="검색어를 입력하세요">
+                <button type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- 우측 배너 -->
+        <div class="right-banner">
+            <% if (!user) { %>
+            <div class="auth-buttons">
+                <a href="/login" class="btn-auth login">로그인</a>
+                <a href="/register" class="btn-auth register">회원가입</a>
+            </div>
+            <% } else { %>
+            <div class="user-menu">
+                <span class="username"><%= user.username %></span>
+                <button class="btn-logout" onclick="handleLogout()">로그아웃</button>
+            </div>
+            <% } %>
+        </div>
+    </div>
+</header> 

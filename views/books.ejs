@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+
+<main class="books-page">
+    <h1 class="page-title">도서 목록</h1>
+    
+    <div class="books-filter">
+        <select id="categoryFilter" class="filter-select">
+            <option value="all">전체</option>
+            <option value="new">신간도서</option>
+            <option value="best">베스트셀러</option>
+            <option value="recommended">추천도서</option>
+        </select>
+    </div>
+
+    <div class="books-grid">
+        <% books.forEach(function(book) { %>
+            <div class="book-card">
+                <div class="book-image">
+                    <img src="<%= book.imageUrl %>" alt="<%= book.title %>">
+                </div>
+                <div class="book-info">
+                    <h3 class="book-title"><%= book.title %></h3>
+                    <p class="book-author"><%= book.author %></p>
+                    <p class="book-price">₩<%= book.price.toLocaleString() %></p>
+                    <button class="btn-detail" onclick="location.href='/books/<%= book._id %>'">자세히 보기</button>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</main>
+
+<%- include('partials/footer') %> 

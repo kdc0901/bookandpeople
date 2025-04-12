@@ -1,0 +1,38 @@
+<%- include('partials/header') %>
+
+<main class="ebooks-page">
+    <h1 class="page-title">전자책</h1>
+    
+    <div class="ebooks-filter">
+        <select id="categoryFilter" class="filter-select">
+            <option value="all">전체</option>
+            <option value="new">신간</option>
+            <option value="best">베스트</option>
+            <option value="free">무료</option>
+        </select>
+    </div>
+
+    <div class="ebooks-grid">
+        <% ebooks.forEach(function(ebook) { %>
+            <div class="ebook-card">
+                <div class="ebook-image">
+                    <img src="<%= ebook.imageUrl %>" alt="<%= ebook.title %>">
+                </div>
+                <div class="ebook-info">
+                    <h3 class="ebook-title"><%= ebook.title %></h3>
+                    <p class="ebook-author"><%= ebook.author %></p>
+                    <p class="ebook-price">
+                        <% if (ebook.price === 0) { %>
+                            무료
+                        <% } else { %>
+                            ₩<%= ebook.price.toLocaleString() %>
+                        <% } %>
+                    </p>
+                    <button class="btn-detail" onclick="location.href='/ebooks/<%= ebook._id %>'">자세히 보기</button>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</main>
+
+<%- include('partials/footer') %> 

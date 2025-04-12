@@ -11,6 +11,10 @@ const bookSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    publishedAt: {
+        type: Date,
+        required: true
+    },
     price: {
         type: Number,
         required: true,
@@ -21,9 +25,18 @@ const bookSchema = new mongoose.Schema({
         required: true,
         enum: ['new', 'used', 'ebook']
     },
+    category: {
+        type: String,
+        required: true,
+        enum: ['pick', 'current']
+    },
     imageUrl: {
         type: String,
         default: '/images/default-book.jpg'
+    },
+    originalImageName: {
+        type: String,
+        default: ''
     },
     createdAt: {
         type: Date,

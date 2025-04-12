@@ -1,0 +1,36 @@
+<%- include('partials/header') %>
+
+<main class="papers-page">
+    <h1 class="page-title">소논문집</h1>
+    
+    <div class="papers-filter">
+        <select id="categoryFilter" class="filter-select">
+            <option value="all">전체</option>
+            <option value="latest">최신순</option>
+            <option value="popular">인기순</option>
+            <option value="subject">주제별</option>
+        </select>
+    </div>
+
+    <div class="papers-grid">
+        <% papers.forEach(function(paper) { %>
+            <div class="paper-card">
+                <div class="paper-image">
+                    <img src="<%= paper.imageUrl %>" alt="<%= paper.title %>">
+                </div>
+                <div class="paper-info">
+                    <h3 class="paper-title"><%= paper.title %></h3>
+                    <p class="paper-author"><%= paper.author %></p>
+                    <p class="paper-abstract"><%= paper.abstract %></p>
+                    <div class="paper-metadata">
+                        <span class="paper-date"><%= paper.publishDate %></span>
+                        <span class="paper-views"><i class="fas fa-eye"></i> <%= paper.views %></span>
+                    </div>
+                    <button class="btn-detail" onclick="location.href='/papers/<%= paper._id %>'">자세히 보기</button>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</main>
+
+<%- include('partials/footer') %> 

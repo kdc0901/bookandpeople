@@ -3,111 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>마이페이지 - Book & People</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <nav class="nav">
-                <div class="nav-left">
-                    <a href="/" class="logo">My Website</a>
-                </div>
-                <div class="nav-right">
-                    <div class="user-info">
-                        <span class="username"><%= user.username %></span>
-                        <div class="dropdown">
-                            <button class="dropdown-btn">▼</button>
-                            <div class="dropdown-content">
-                                <a href="/api/users/mypage">마이페이지</a>
-                                <a href="/api/users/logout" class="logout-btn">로그아웃</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- 헤더 -->
+    <%- include('partials/header') %>
 
-    <main class="main">
-        <div class="container">
-            <div class="mypage-content">
-                <h1>마이페이지</h1>
-                
-                <div class="profile-section">
-                    <h2>프로필 정보</h2>
-                    <div class="profile-info">
-                        <div class="info-group">
-                            <label>사용자명</label>
-                            <p><%= user.username %></p>
-                        </div>
-                        <div class="info-group">
-                            <label>이메일</label>
-                            <p><%= user.email %></p>
-                        </div>
-                        <div class="info-group">
-                            <label>가입일</label>
-                            <p><%= joinDate %></p>
-                        </div>
-                        <div class="info-group">
-                            <label>계정 유형</label>
-                            <p><%= user.isAdmin ? '관리자' : '일반 회원' %></p>
-                        </div>
+    <div class="mypage-container">
+        <div class="mypage-content">
+            <h1>마이페이지</h1>
+            
+            <div class="profile-section">
+                <h2>회원 정보</h2>
+                <div class="profile-info">
+                    <div class="info-group">
+                        <label>아이디 (변경불가)</label>
+                        <p class="disabled"><%= user.username %></p>
                     </div>
-                </div>
-
-                <div class="account-section">
-                    <h2>계정 관리</h2>
-                    <div class="account-actions">
-                        <button id="changePasswordBtn" class="btn">비밀번호 변경</button>
-                        <button id="updateProfileBtn" class="btn btn-outline">프로필 수정</button>
+                    <div class="info-group">
+                        <label>이름</label>
+                        <p><%= user.name %></p>
+                    </div>
+                    <div class="info-group">
+                        <label>이메일</label>
+                        <p><%= user.email %></p>
+                    </div>
+                    <div class="info-group">
+                        <label>연락처</label>
+                        <p><%= user.phone || '미등록' %></p>
+                    </div>
+                    <div class="info-group">
+                        <label>우편번호</label>
+                        <p><%= user.postcode || '미등록' %></p>
+                    </div>
+                    <div class="info-group">
+                        <label>주소</label>
+                        <p><%= user.address || '미등록' %></p>
+                    </div>
+                    <div class="info-group">
+                        <label>상세주소</label>
+                        <p><%= user.addressDetail || '미등록' %></p>
+                    </div>
+                    <div class="info-group">
+                        <label>가입일</label>
+                        <p><%= new Date(user.createdAt).toLocaleDateString('ko-KR', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        }) %></p>
                     </div>
                 </div>
             </div>
+
+            <div class="order-history-section">
+                <h2>주문 내역</h2>
+                <% if (orders && orders.length > 0) { %>
+                    <div class="order-list">
+                        <% orders.forEach(order => { %>
+                            <div class="order-item">
+                                <div class="order-header">
+                                    <span class="order-date">
+                                        <%= new Date(order.createdAt).toLocaleDateString('ko-KR', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        }) %>
+                                    </span>
+                                    <span class="order-id">주문번호: <%= order._id %></span>
+                                    <span class="order-status"><%= order.status %></span>
+                                </div>
+                                <div class="order-books">
+                                    <% order.items.forEach(item => { %>
+                                        <div class="order-book">
+                                            <img src="<%= item.book.imageUrl || '/images/default-book.png' %>" alt="<%= item.book.title %>">
+                                            <div class="book-details">
+                                                <h3><%= item.book.title %></h3>
+                                                <p class="book-author"><%= item.book.author %></p>
+                                                <p class="book-quantity">수량: <%= item.quantity %>권</p>
+                                                <p class="book-price"><%= (item.price * item.quantity).toLocaleString() %>원</p>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                                <div class="order-total">
+                                    <span>총 주문금액: <%= order.totalAmount.toLocaleString() %>원</span>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <div class="no-orders">
+                        <p>주문 내역이 없습니다.</p>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="account-section">
+                <h2>계정 관리</h2>
+                <div class="account-actions">
+                    <a href="/mypage/edit" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> 정보 수정
+                    </a>
+                    <a href="/mypage/password" class="btn btn-secondary">
+                        <i class="fas fa-key"></i> 비밀번호 변경
+                    </a>
+                </div>
+            </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        // 드롭다운 메뉴 토글
-        document.querySelectorAll('.dropdown-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
+    document.addEventListener('DOMContentLoaded', function() {
+        // 드롭다운 메뉴 초기화
+        const dropdownBtn = document.querySelector('.dropdown-btn');
+        const dropdownContent = document.querySelector('.dropdown-content');
+        
+        if (dropdownBtn && dropdownContent) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.preventDefault();
                 e.stopPropagation();
-                const dropdown = button.nextElementSibling;
-                dropdown.classList.toggle('show');
+                dropdownContent.classList.toggle('show');
             });
-        });
 
-        // 문서 클릭 시 드롭다운 닫기
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.dropdown')) {
-                document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-                    dropdown.classList.remove('show');
-                });
-            }
-        });
-
-        // 로그아웃 처리
-        document.querySelector('.logout-btn')?.addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                const response = await fetch('/api/users/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    window.location.replace(data.redirectUrl);
-                } else {
-                    alert(data.message || '로그아웃 중 오류가 발생했습니다.');
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    dropdownContent.classList.remove('show');
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('서버 오류가 발생했습니다.');
-            }
-        });
+            });
+        }
+
+        // 로그아웃 기능
+        const logoutBtn = document.querySelector('.logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                try {
+                    const response = await fetch('/api/users/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.href = '/';
+                    } else {
+                        alert(data.message || '로그아웃 중 오류가 발생했습니다.');
+                    }
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    alert('로그아웃 중 오류가 발생했습니다.');
+                }
+            });
+        }
+    });
     </script>
 </body>
 </html> 

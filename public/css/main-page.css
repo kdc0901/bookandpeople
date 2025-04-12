@@ -1,0 +1,135 @@
+/* 메인 페이지 레이아웃 */
+.main-page {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 섹션 스타일 */
+.main-page__section {
+    margin-bottom: 40px;
+    padding: 0 20px;
+}
+
+.main-page__title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #333;
+}
+
+/* 책 그리드 레이아웃 */
+.main-page__book-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 20px;
+}
+
+/* 책 아이템 스타일 */
+.main-page__book-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+    width: 100%;
+}
+
+.main-page__book-item:hover {
+    transform: translateY(-5px);
+}
+
+/* 책 이미지 스타일 */
+.main-page__book-image {
+    width: 100%;
+    padding-bottom: 140%; /* 높이를 너비의 1.4배로 설정 */
+    position: relative;
+    margin-bottom: 12px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.main-page__book-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 책 정보 스타일 */
+.main-page__book-info {
+    text-align: left;
+}
+
+.main-page__book-title {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #333;
+    /* 2줄 이상일 때 말줄임표 처리 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    height: 2.6em;
+}
+
+.main-page__book-author {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.main-page__book-published {
+    font-size: 13px;
+    color: #888;
+    font-style: italic;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .main-page__book-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-page__book-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+    
+    .main-page__section {
+        padding: 0 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-page__book-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+    
+    .main-page__section {
+        padding: 0 12px;
+    }
+    
+    .main-page__book-title {
+        font-size: 14px;
+    }
+    
+    .main-page__book-author {
+        font-size: 12px;
+    }
+    
+    .main-page__book-published {
+        font-size: 13px;
+    }
+} 
